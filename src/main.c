@@ -4,9 +4,8 @@ const int screen_height = 600;
 const int FPS = 60;
 
 void point(Vector2 p) {
-    const float size = 20.0f;
-    const float s = 20.0f;
-    DrawRectangle(p.x - s / 2.0f, p.y - s / 2.0f, s, s, BLUE);
+    const float size = 0.0f;
+    DrawRectangle(p.x - size / 2.0f, p.y - size / 2.0f, size, size, BLUE);
 }
 
 Vector2 screen(Vector2 p) {
@@ -38,14 +37,27 @@ Vector3 points[] = {
     // clang-format on
 };
 
+int edges[][2] = {
+    {0, 1}, {1, 3}, {3, 2}, {2, 0}, // Back
+    {4, 5}, {5, 7}, {7, 6}, {6, 4}, // Front
+    {5, 1}, {3, 7},                 // Left
+    {0, 4}, {2, 6}                  // Right
+};
+
 Vector3 translate_z(Vector3 p, float dz) {
     return (Vector3){p.x, p.y, p.z + dz};
 }
 
 void render(float dz) {
     ClearBackground(BLACK);
+    Vector2 projected[sizeof(points) / sizeof(points[0])];
     for (unsigned long i = 0; i < sizeof(points) / sizeof(points[0]); ++i) {
-        point(screen(project(translate_z(points[i], dz))));
+        projected[i] = screen(project(translate_z(points[i], dz)));
+        point(projected[i]);
+    }
+
+    for (int i = 0; i < sizeof(edges) / sizeof(edges[0]); i++) {
+        DrawLineV(projected[edges[i][0]], projected[edges[i][1]], BLUE);
     }
 }
 
