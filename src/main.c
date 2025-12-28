@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include <math.h>
 const int screen_width = 800;
 const int screen_height = 600;
 const int FPS = 60;
@@ -48,14 +49,20 @@ Vector3 translate_z(Vector3 p, float dz) {
     return (Vector3){p.x, p.y, p.z + dz};
 }
 
-void render(float dz) {
+Vector3 rotate_xz(Vector3 p, float a) {
+    float c = cosf(a);
+    float s = sinf(a);
+    return (Vector3){p.x * c - p.z * s, p.y, p.x * s + p.z * c};
+}
+
+void render(float dz, float angle) {
     ClearBackground(BLACK);
     Vector2 projected[sizeof(points) / sizeof(points[0])];
     for (unsigned long i = 0; i < sizeof(points) / sizeof(points[0]); ++i) {
-        projected[i] = screen(project(translate_z(points[i], dz)));
+        projected[i] =
+            screen(project(translate_z(rotate_xz(points[i], angle), dz)));
         point(projected[i]);
     }
-
     for (int i = 0; i < sizeof(edges) / sizeof(edges[0]); i++) {
         DrawLineV(projected[edges[i][0]], projected[edges[i][1]], BLUE);
     }
@@ -65,16 +72,18 @@ int main() {
     InitWindow(screen_width, screen_height, "should work?");
     SetTargetFPS(FPS);
 
-    float dz = 0.5f;
+    float angle = 0.0f;
+    float baseZ = 2.5f;
+    float amplitude = 1.0f;
 
     while (!WindowShouldClose()) {
-        float dt = 1.0f / FPS;
-        dz += 1.0f * dt;
+        float dt = GetFrameTime();
+        float dz = baseZ + sinf(GetTime()) * amplitude;
+        angle +=  dt;
         BeginDrawing();
-        render(dz);
+        render(dz, angle);
         EndDrawing();
     }
     CloseWindow();
-
     return 0;
 }
